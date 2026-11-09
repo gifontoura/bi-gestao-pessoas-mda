@@ -1,0 +1,24 @@
+{
+  "name": "CGGP gov.br",
+  "dataColors": ["#1351B4", "#071D41", "#168821", "#5992ED", "#FFCD07", "#C2850C", "#888888"],
+  "background": "#FFFFFF",
+  "foreground": "#071D41",
+  "tableAccent": "#1351B4",
+  "good": "#168821",
+  "neutral": "#FFCD07",
+  "bad": "#E52207",
+  "textClasses": {
+    "title": { "fontFace": "Verdana", "fontSize": 14, "color": "#071D41" },
+    "header": { "fontFace": "Verdana", "fontSize": 12, "color": "#071D41" },
+    "label": { "fontFace": "Verdana", "fontSize": 10, "color": "#333333" },
+    "callout": { "fontFace": "Verdana", "fontSize": 32, "color": "#071D41" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "show": true, "color": { "solid": { "color": "#FFFFFF" } } }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#D9D9D9" } }, "radius": 4 }]
+      }
+    }
+  }
+}

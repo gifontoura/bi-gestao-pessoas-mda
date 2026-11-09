@@ -1,0 +1,88 @@
+// =====================================================================
+// BI de Gestão de Pessoas (CGGP/SPOA – MDA)
+// Exemplos simplificados das medidas DAX do modelo.
+// Nomes de colunas adaptados para publicação; sem dados reais.
+// =====================================================================
+
+// ---------- Quadro de Pessoal ----------------------------------------
+
+// Pessoas distintas (o CPF fica oculto no modelo e é usado só como chave)
+Pessoas =
+DISTINCTCOUNT ( fVinculo[CPF] )
+
+// Reage ao botão Quadro / Estagiários: sem seleção, mostra o quadro sem estagiários
+Quadro de Pessoal =
+IF (
+    ISFILTERED ( dSituacao[Publico] ),
+    [Pessoas],
+    CALCULATE ( [Pessoas], dSituacao[Publico] = "Quadro" )
+)
+
+Estagiarios =
+CALCULATE ( [Pessoas], dSituacao[Publico] = "Estagiários" )
+
+% CCE/FCE no Quadro =
+DIVIDE ( [Pessoas com Função no SIAPE], [Quadro de Pessoal] )
+
+// Legenda dinâmica do cartão
+Legenda CCE FCE =
+FORMAT ( [% CCE/FCE no Quadro], "0,0%" ) & " do quadro de pessoal"
+
+// ---------- Cargos e Funções (postos CCE/FCE) -------------------------
+
+Postos Totais =
+COUNTROWS ( fQuadroFuncoes )
+
+Postos Ocupados =
+CALCULATE ( [Postos Totais], fQuadroFuncoes[SituacaoPosto] = "Ocupado" )
+
+Postos Vagos =
+CALCULATE ( [Postos Totais], fQuadroFuncoes[SituacaoPosto] = "Vago" )
+
+% Ocupação =
+DIVIDE ( [Postos Ocupados], [Postos Totais] )
+
+Legenda Postos por Tipo =
+VAR cce = CALCULATE ( [Postos Totais], dFuncao[Tipo] = "CCE" )
+VAR fce = CALCULATE ( [Postos Totais], dFuncao[Tipo] = "FCE" )
+RETURN
+    FORMAT ( cce, "#,0" ) & " CCE e " & FORMAT ( fce, "#,0" ) & " FCE"
+
+Unidades com Postos =
+CALCULATE ( DISTINCTCOUNT ( fQuadroFuncoes[UorgKey] ) )
+
+Unidades com Vaga =
+CALCULATE (
+    DISTINCTCOUNT ( fQuadroFuncoes[UorgKey] ),
+    fQuadroFuncoes[SituacaoPosto] = "Vago"
+)
+
+// Macro com mais vagas (em caso de empate, lista todas)
+Macro com Mais Vagas =
+VAR topo =
+    TOPN ( 1, VALUES ( dUorg[Macro] ), [Postos Vagos], DESC )
+RETURN
+    CONCATENATEX ( topo, dUorg[Macro], ", " )
+
+// ---------- Controle de qualidade entre fontes ------------------------
+
+// Pessoas que o SIAPE registra com função, respeitando os filtros da página
+Pessoas com Função no SIAPE =
+CALCULATE (
+    [Pessoas],
+    KEEPFILTERS ( NOT ISBLANK ( fVinculo[FuncaoKey] ) )
+)
+
+// Diferença entre o SIAPE e a planilha de cargos e funções da CGGP
+Diferença SIAPE x Planilha =
+[Pessoas com Função no SIAPE] - [Postos Ocupados]
+
+// ---------- Calendário -------------------------------------------------
+
+dCalendario =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2020, 1, 1 ), DATE ( YEAR ( TODAY () ), 12, 31 ) ),
+    "Ano", YEAR ( [Date] ),
+    "Mês", FORMAT ( [Date], "mmm" ),
+    "Mês Nº", MONTH ( [Date] )
+)
